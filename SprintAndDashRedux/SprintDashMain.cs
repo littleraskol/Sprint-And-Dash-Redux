@@ -81,7 +81,7 @@ namespace SprintAndDashRedux
         /// <summary>Does nothing, exists to time cooldown of windedness.</summary>
         private Buff WindedBuff;
 
-        private KeyboardState CurrentKeyboardState;
+        //private KeyboardState CurrentKeyboardState;
 
         private Keys[] RunKey;
 
@@ -156,13 +156,14 @@ namespace SprintAndDashRedux
                 return;
 
             SButton pressedButton = e.Button;
+            
+            //Used to detect running
             Keys pressedKey;
-
             if (pressedButton.TryGetKeyboard(out Keys key)) pressedKey = key;
-            else return;
+            else pressedKey = Keys.None;
 
             // dashing is a time-limited thing, just do it on a press
-            if (this.DashDuration > 0 && pressedKey == this.Config.DashKey && !this.NeedCooldown)
+            if (this.DashDuration > 0 && pressedButton == this.Config.DashKey && !this.NeedCooldown)
             {
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
@@ -174,10 +175,12 @@ namespace SprintAndDashRedux
                 int defense = (Game1.player.ForagingLevel / 2 + Game1.player.FishingLevel / 3) +1;
                 int attack = Game1.player.CombatLevel + 1;
 
-                DashBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, speed, defense, attack, 1, "Combat Dash", "Combat Dash");
-                DashBuff.millisecondsDuration = this.DashDuration;
-                DashBuff.which = SprintDashMain.DashBuffID;
-                DashBuff.glow = Color.AntiqueWhite;
+                DashBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, speed, defense, attack, 1, "Combat Dash", "Combat Dash")
+                {
+                    millisecondsDuration = this.DashDuration,
+                    which = SprintDashMain.DashBuffID,
+                    glow = Color.AntiqueWhite
+                };
                 Game1.buffsDisplay.addOtherBuff(DashBuff);
                 float staminaToConsume = speed + defense + attack + 10;
                 float healthToConsume = 0f;
@@ -217,7 +220,7 @@ namespace SprintAndDashRedux
 
                 this.Monitor.Log($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedKey == this.Config.SprintKey && this.EnableToggle)
+            else if (pressedButton == this.Config.SprintKey && this.EnableToggle)
             {
                 this.SprintToggledOn = !this.SprintToggledOn;
 
@@ -284,8 +287,8 @@ namespace SprintAndDashRedux
             }
 
             //Apply sprint buff if needed.
-            this.CurrentKeyboardState = Keyboard.GetState();
-            if ((this.CurrentKeyboardState.IsKeyDown(this.Config.SprintKey) || this.SprintToggledOn) && !Game1.player.isRidingHorse())
+            //this.CurrentKeyboardState = Keyboard.GetState();
+            if ((this.Helper.Input.IsDown(this.Config.SprintKey) || this.SprintToggledOn) && !Game1.player.isRidingHorse())
             {
                 if (this.SprintTime < 0)
                     this.SprintTime = 0;

@@ -8,6 +8,8 @@ This mod adds the following functions to the game:
 -Dashing: A temporary skill-scaling powerup that buffs your speed, attck power, and defense for a time, with an associated cooldown/vulnerability phase. Think of it as a combat panic button. By default activated with the Q Key.
 -Getting winded: Progressive stamina drain over time such that the longer you sprint for, the more stamina you will lose.
 
+Gamepad/controller users: Although I use the word "key" throughout this document, under the hood the code can recognize controller buttons too. The only limitation (for now) is some logic used to detect whether you are running still expects a key.
+
 2. CREDITS
 
 This is an adaption of the work of OrSpeeder, who created the original Sprint and Dash Mod, and released it under the GNU General Public License. Sprint and Dash Mod Redux will also use it. I recommend checking his version of the mod out if this isn't your thing, or to check out his other mods.
@@ -30,9 +32,7 @@ dashDuration: Measured in seconds. By default this is 4 seconds. Note that the c
 
 windedStep: Measured in seconds. By default, this is 5 seconds. Set to 0 to ignore/deactivate this system. Explained in more depth below.
 
-toggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again. By default, this is true. Set to false, you only sprint while the button is pressed.
-
-Gamepad users: The mod doesn't have code to support a gamepad, yet. However, you can use a third-party program called Joytokey to map keyboard buttons to gamepad buttons for now. Link: http://joytokey.net/en/
+toggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again. By default, this is true. Set to false, you only sprint while the button is pressed. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.)
 
 4. THE WINDED SYSTEM
 
@@ -53,6 +53,7 @@ v2.0.0 (08/??/20)
 -Fix: Sprint no long drains stamina if not moving.
 -Dash buff minimal buff of +1.
 -Dash buff can no longer kill the player (I think??).
+-Support for controller buttons (can't test this though, don't have a controller).
 
 v1.2.0 (02/09/2017)
 -More robust check for appropriate conditions (uses existing SDV function to determine if "time should pass.")
@@ -93,7 +94,7 @@ In the near future I would like to accommodate controller natively but I have to
 
 8. CONTROLS
 
-I've changed the default keys to the ones I use: spacebar for sprint, Q for dash. In the past, changing this required using a code number system. That's no longer the case but I will leave this index here in case it is needed for e.g., controller mapping. Otherwise, you should use this reference for other keys: https://docs.microsoft.com/en-us/previous-versions/windows/xna/bb197781(v%3dxnagamestudio.40)
+I've changed the default keys to the ones I use: spacebar for sprint, Q for dash. In the past, changing this required using a code number system. That's no longer the case but I will leave this index here in case it is needed for any reason. Otherwise, you should use this reference for other keys: https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings
 
 None = 0,
 Back = 8,

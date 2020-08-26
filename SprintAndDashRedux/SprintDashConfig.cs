@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Input;
+using StardewModdingAPI;
 
 namespace SprintAndDashRedux
 {
@@ -8,10 +9,10 @@ namespace SprintAndDashRedux
         ** Accessors
         *********/
         /// <summary>The key to hold for sprinting.</summary>
-        public Keys SprintKey { get; set; } = Keys.Space;
+        public SButton SprintKey { get; set; } = SButton.Space;
 
         /// <summary>The key to activate combat dash.</summary>
-        public Keys DashKey { get; set; } = Keys.Q;
+        public SButton DashKey { get; set; } = SButton.Q;
 
         /// <summary>The stamina cost per tick for sprinting.</summary>
         public float StamCost { get; set; } = 2;
