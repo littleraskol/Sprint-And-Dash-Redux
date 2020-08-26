@@ -172,7 +172,7 @@ namespace SprintAndDashRedux
 
                 int speed = (Game1.player.FarmingLevel / 2) + 1;
                 int defense = (Game1.player.ForagingLevel / 2 + Game1.player.FishingLevel / 3) +1;
-                int attack = Game1.player.CombatLevel;
+                int attack = Game1.player.CombatLevel + 1;
 
                 DashBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, speed, defense, attack, 1, "Combat Dash", "Combat Dash");
                 DashBuff.millisecondsDuration = this.DashDuration;

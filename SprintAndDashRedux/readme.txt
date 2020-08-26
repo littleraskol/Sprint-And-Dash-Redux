@@ -51,7 +51,7 @@ v2.0.0 (08/??/20)
 -Toggle is default behavior.
 -Winded after increments of 5 seconds of sprinting is default behavior.
 -Fix: Sprint no long drains stamina if not moving.
--Dash buff minimal buff improved by +1 for speed and defense.
+-Dash buff minimal buff of +1.
 -Dash buff can no longer kill the player (I think??).
 
 v1.2.0 (02/09/2017)
