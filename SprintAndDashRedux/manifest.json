@@ -1,10 +1,10 @@
 {
   "Name": "Sprint and Dash Mod Redux",
   "Author": "littleraskol",
-  "Version": "1.3.0",
+  "Version": "2.0.0",
   "Description": "Lets you sprint and combat dash, with optional settings. Based on a mod by OrSpeeder.",
   "UniqueID": "littleraskol.SprintAndDashRedux",
   "EntryDll": "SprintAndDashRedux.dll",
   "MinimumApiVersion": "3.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": [ "Chucklefish:4201", "Nexus:560" ]
 }

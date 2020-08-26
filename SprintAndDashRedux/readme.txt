@@ -1,4 +1,4 @@
-# Sprint-And-Dash-Redux
+﻿# Sprint-And-Dash-Redux
  Stardew Valley mod adding new sprinting and dashing functions.
 
 1. INTRO
@@ -50,7 +50,7 @@ v2.0.0 (08/??/20)
 -Updated to most recent SMAPI and Stardew Valley.
 -Toggle is default behavior.
 -Winded after increments of 5 seconds of sprinting is default behavior.
--Fix: No long drains stamina if not moving.
+-Fix: Sprint no long drains stamina if not moving.
 -Dash buff minimal buff improved by +1 for speed and defense.
 -Dash buff can no longer kill the player (I think??).
 

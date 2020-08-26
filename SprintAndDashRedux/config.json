@@ -3,6 +3,6 @@
   "DashKey": "Q",
   "StamCost": 2.0,
   "DashDuration": 4,
-  "WindedStep": 0,
-  "ToggleMode": false
+  "WindedStep": 5,
+  "ToggleMode": true
 }

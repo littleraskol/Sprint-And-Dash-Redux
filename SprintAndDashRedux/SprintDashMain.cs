@@ -118,7 +118,7 @@ namespace SprintAndDashRedux
             // read config
             this.Config = helper.ReadConfig<SprintDashConfig>();
             this.StamCost = Math.Max(1, this.Config.StamCost);
-            this.DashDuration = Math.Max(1, Math.Min(10, this.Config.DashDuration)) * 1000; // 1-10 seconds
+            this.DashDuration = Math.Min(10, this.Config.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
             this.DashCooldown = (int)(this.DashDuration * 2.5);
             this.WindedStep = this.Config.WindedStep;
             if (this.WindedStep > 0)
@@ -162,7 +162,7 @@ namespace SprintAndDashRedux
             else return;
 
             // dashing is a time-limited thing, just do it on a press
-            if (pressedKey == this.Config.DashKey && !this.NeedCooldown)
+            if (this.DashDuration > 0 && pressedKey == this.Config.DashKey && !this.NeedCooldown)
             {
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
@@ -170,8 +170,8 @@ namespace SprintAndDashRedux
                         return;
                 }
 
-                int speed = Game1.player.FarmingLevel / 2;
-                int defense = Game1.player.ForagingLevel / 2 + Game1.player.FishingLevel / 3;
+                int speed = (Game1.player.FarmingLevel / 2) + 1;
+                int defense = (Game1.player.ForagingLevel / 2 + Game1.player.FishingLevel / 3) +1;
                 int attack = Game1.player.CombatLevel;
 
                 DashBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, speed, defense, attack, 1, "Combat Dash", "Combat Dash");
@@ -187,7 +187,7 @@ namespace SprintAndDashRedux
                     staminaToConsume = Math.Max(Game1.player.Stamina - 1, 0f);
                 }
                 Game1.player.Stamina -= staminaToConsume;
-                Game1.player.health = Math.Max(0, Game1.player.health - (int)healthToConsume);
+                Game1.player.health = Math.Max(1, Game1.player.health - (int)healthToConsume);
                 this.NeedCooldown = true;
 
                 if (healthToConsume == 0)
@@ -318,11 +318,15 @@ namespace SprintAndDashRedux
                             if (Game1.player.stamina > this.MinStaminaToRefresh)
                                 buff.millisecondsDuration += this.RefreshTime;
 
-                            //These are checks so that, if somehow we end up with a total stamina cost greater than current stamina, we won't get a negative result. (Not sure if needed?)
-                            if (Game1.player.stamina > (this.StamCost + this.WindedAccumulated))
-                                Game1.player.stamina -= (this.StamCost + this.WindedAccumulated);
-                            else
-                                Game1.player.stamina = 0;
+                            //Only remove stamina if player is moving.
+                            if (Game1.player.isMoving())
+                            {
+                                //These are checks so that, if somehow we end up with a total stamina cost greater than current stamina, we won't get a negative result. (Not sure if needed?)
+                                if (Game1.player.stamina > (this.StamCost + this.WindedAccumulated))
+                                    Game1.player.stamina -= (this.StamCost + this.WindedAccumulated);
+                                else
+                                    Game1.player.stamina = 0;
+                            }
                         }
                         return;
                     }
