@@ -321,15 +321,18 @@ namespace SprintAndDashRedux
                             if (Game1.player.stamina > this.MinStaminaToRefresh)
                                 buff.millisecondsDuration += this.RefreshTime;
 
-                            //Only remove stamina if player is moving.
                             if (Game1.player.isMoving())
                             {
+                                //Sprinting should implicitly entail running.
+                                if (!Game1.player.running) Game1.player.setRunning(true);
+
                                 //These are checks so that, if somehow we end up with a total stamina cost greater than current stamina, we won't get a negative result. (Not sure if needed?)
                                 if (Game1.player.stamina > (this.StamCost + this.WindedAccumulated))
                                     Game1.player.stamina -= (this.StamCost + this.WindedAccumulated);
                                 else
                                     Game1.player.stamina = 0;
                             }
+                            else if (Game1.player.running) Game1.player.setRunning(false);  //JIC, don't run while standing still...
                         }
                         return;
                     }
