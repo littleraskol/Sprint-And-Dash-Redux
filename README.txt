@@ -20,11 +20,11 @@ For information on this license, see:
 
 Sprint and Dash Mod Redux mod is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-Source code is packaged with the mod as "SprintDashMain.cs.txt". Remove the ".txt" to use.
+Source code is packaged with the mod.
 
 3. CONFIGURATION
 
-Sprint and Dash Mod Redux (S&DR) can be configured to change the keys for its sprint and dash functions, the stamina cost per tick of sprinting (stamCost), and the duration of the combat dash buff (dashDuration). Additionally, there is a new "winded" feature to use or not at your choice. You can also select whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again.
+Sprint and Dash Mod Redux can be configured to change the keys for its sprint and dash functions, the stamina cost per tick of sprinting (stamCost), and the duration of the combat dash buff (dashDuration). Additionally, there is a new "winded" feature to use or not at your choice. You can also select whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again.
 
 stamCost: Measured in points of stamina. By default, this is 2. Minimum is 1, lower values will be treated as 1.
 
