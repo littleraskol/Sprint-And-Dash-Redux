@@ -34,7 +34,9 @@ namespace SprintAndDashRedux
         /*********
         ** Properties
         *********/
-        private SprintDashConfig Config;
+        private SprintDashConfig myConfig;
+
+        private Farmer myPlayer;
 
         /// <summary>The stamina cost per tick for sprinting.</summary>
         private float StamCost;
@@ -111,31 +113,37 @@ namespace SprintAndDashRedux
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            this.SprintBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, "Sprinting", "Sprinting");
-            this.CooldownBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 1, "Combat Dash Cooldown", "Combat Dash Cooldown");
-            this.WindedBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, "Winded", "Winded");
+            SprintBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, "Sprinting", "Sprinting");
+            CooldownBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 1, "Combat Dash Cooldown", "Combat Dash Cooldown");
+            WindedBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, "Winded", "Winded");
 
             // read config
-            this.Config = helper.ReadConfig<SprintDashConfig>();
-            this.StamCost = Math.Max(1, this.Config.StamCost);
-            this.DashDuration = Math.Min(10, this.Config.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
-            this.DashCooldown = (int)(this.DashDuration * 2.5);
-            this.WindedStep = this.Config.WindedStep;
-            if (this.WindedStep > 0)
+            myConfig = helper.ReadConfig<SprintDashConfig>();
+            StamCost = Math.Max(1, myConfig.StamCost);
+            DashDuration = Math.Min(10, myConfig.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
+            DashCooldown = (int)(DashDuration * 2.5);
+            WindedStep = myConfig.WindedStep;
+            if (WindedStep > 0)
             {
-                this.EnableWindedness = true;
-                this.WindedCooldownStep = this.WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
-                this.WindedStep *= 1000; // convert config-based times to ms
+                EnableWindedness = true;
+                WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
+                WindedStep *= 1000; // convert config-based times to ms
             }
-            this.EnableToggle = this.Config.ToggleMode;
-            this.RunKey = null;
+            EnableToggle = myConfig.ToggleMode;
+            RunKey = null;
 
             // hook events
-            helper.Events.GameLoop.UpdateTicked += this.GameEvents_UpdateTick;
+            helper.Events.GameLoop.SaveLoaded += StartupTasks;
+            helper.Events.GameLoop.UpdateTicked += GameEvents_UpdateTick;
             helper.Events.Input.ButtonPressed += Input_ButtonPressed;
 
             // log info
-            this.Monitor.Log($"Stamina cost: {this.StamCost}, dash duration: {this.DashDuration}, dash cooldown: {this.DashCooldown}, winded step: {this.WindedStep}, toggle mode: {this.EnableToggle}", LogLevel.Trace);
+            Monitor.Log($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
+        }
+
+        private void StartupTasks(object sender, SaveLoadedEventArgs e)
+        {
+            myPlayer = Game1.player;
         }
 
         /*********
@@ -143,7 +151,7 @@ namespace SprintAndDashRedux
         *********/
         private void WindedTest()
         {
-            this.Monitor.Log($"(Winded Status) sprint time: {this.SprintTime}, steps progressed: {this.StepsProgressed}, winded accumulated: {this.WindedAccumulated}");
+            Monitor.Log($"(Winded Status) sprint time: {SprintTime}, steps progressed: {StepsProgressed}, winded accumulated: {WindedAccumulated}");
         }
 
         /// <summary>Detect key press.</summary>
@@ -152,7 +160,7 @@ namespace SprintAndDashRedux
         void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             // do nothing if the conditions aren't favorable
-            if (!Game1.shouldTimePass() || Game1.player.isRidingHorse())
+            if (!Game1.shouldTimePass() || myPlayer.isRidingHorse())
                 return;
 
             SButton pressedButton = e.Button;
@@ -163,35 +171,35 @@ namespace SprintAndDashRedux
             else pressedKey = Keys.None;
 
             // dashing is a time-limited thing, just do it on a press
-            if (this.DashDuration > 0 && pressedButton == this.Config.DashKey && !this.NeedCooldown)
+            if (DashDuration > 0 && pressedButton == myConfig.DashKey && !NeedCooldown)
             {
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
-                    if (buff == this.CooldownBuff || buff == DashBuff)
+                    if (buff == CooldownBuff || buff == DashBuff)
                         return;
                 }
 
-                int speed = (Game1.player.FarmingLevel / 2) + 1;
-                int defense = (Game1.player.ForagingLevel / 2 + Game1.player.FishingLevel / 3) +1;
-                int attack = Game1.player.CombatLevel + 1;
+                int speed = (myPlayer.FarmingLevel / 2) + 1;
+                int defense = (myPlayer.ForagingLevel / 2 + myPlayer.FishingLevel / 3) +1;
+                int attack = myPlayer.CombatLevel + 1;
 
                 DashBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, speed, defense, attack, 1, "Combat Dash", "Combat Dash")
                 {
-                    millisecondsDuration = this.DashDuration,
+                    millisecondsDuration = DashDuration,
                     which = SprintDashMain.DashBuffID,
                     glow = Color.AntiqueWhite
                 };
                 Game1.buffsDisplay.addOtherBuff(DashBuff);
                 float staminaToConsume = speed + defense + attack + 10;
                 float healthToConsume = 0f;
-                if (staminaToConsume > Game1.player.Stamina)
+                if (staminaToConsume > myPlayer.Stamina)
                 {
-                    healthToConsume = staminaToConsume - Game1.player.Stamina;
-                    staminaToConsume = Math.Max(Game1.player.Stamina - 1, 0f);
+                    healthToConsume = staminaToConsume - myPlayer.Stamina;
+                    staminaToConsume = Math.Max(myPlayer.Stamina - 1, 0f);
                 }
-                Game1.player.Stamina -= staminaToConsume;
-                Game1.player.health = Math.Max(1, Game1.player.health - (int)healthToConsume);
-                this.NeedCooldown = true;
+                myPlayer.Stamina -= staminaToConsume;
+                myPlayer.health = Math.Max(1, myPlayer.health - (int)healthToConsume);
+                NeedCooldown = true;
 
                 if (healthToConsume == 0)
                 {
@@ -205,8 +213,8 @@ namespace SprintAndDashRedux
                     Game1.playSound("ow");
                 }
 
-                Vector2 tileLocation = Game1.player.getTileLocation();
-                Vector2 initialTile = Game1.player.getTileLocation();
+                Vector2 tileLocation = myPlayer.getTileLocation();
+                Vector2 initialTile = myPlayer.getTileLocation();
                 Game1.currentLocation.temporarySprites.Add(new TemporaryAnimatedSprite(6, new Vector2(tileLocation.X * Game1.tileSize, tileLocation.Y * Game1.tileSize), Color.White, 8, Game1.random.NextDouble() < 0.5, Vector2.Distance(initialTile, tileLocation) * 30f));
                 tileLocation.X -= 1;
                 Game1.currentLocation.temporarySprites.Add(new TemporaryAnimatedSprite(6, new Vector2(tileLocation.X * Game1.tileSize, tileLocation.Y * Game1.tileSize), Color.White, 8, Game1.random.NextDouble() < 0.5, Vector2.Distance(initialTile, tileLocation) * 30f));
@@ -218,176 +226,178 @@ namespace SprintAndDashRedux
                 tileLocation.Y += 2;
                 Game1.currentLocation.temporarySprites.Add(new TemporaryAnimatedSprite(6, new Vector2(tileLocation.X * Game1.tileSize, tileLocation.Y * Game1.tileSize), Color.White, 8, Game1.random.NextDouble() < 0.5, Vector2.Distance(initialTile, tileLocation) * 30f));
 
-                this.Monitor.Log($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
+                Monitor.Log($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedButton == this.Config.SprintKey && this.EnableToggle)
+            else if (pressedButton == myConfig.SprintKey && EnableToggle)
             {
-                this.SprintToggledOn = !this.SprintToggledOn;
+                SprintToggledOn = !SprintToggledOn;
 
                 //Re-enable autorun if sprinting because sprint-walking is, uh, dumb.
-                if (!Game1.options.autoRun && this.SprintToggledOn)
+                if (!Game1.options.autoRun && SprintToggledOn)
                     Game1.options.autoRun = true;
             }
             //At this point, the run button is basically a toggle for autorun. Not sure if this is the best feature honestly but eh.
-            else if (this.RunKey.Contains(pressedKey) && this.EnableToggle)
+            else if (RunKey.Contains(pressedKey) && EnableToggle)
             {
                 Game1.options.autoRun = !Game1.options.autoRun;
 
                 //Disable sprinting if we're no longer running because sprint-walking is, uh, dumb.
-                if (this.SprintToggledOn && !Game1.options.autoRun)
-                    this.SprintToggledOn = false;
+                if (SprintToggledOn && !Game1.options.autoRun)
+                    SprintToggledOn = false;
             }
+        }
+
+        private bool IsInSprintMode()
+        {
+            if (Helper.Input.IsDown(myConfig.SprintKey) || SprintToggledOn) return true;
+            else return false;
         }
 
         //Do this every tick. Checks for persistent effects, does first-run stuff.
         private void GameEvents_UpdateTick(object sender, EventArgs e)
         {
+            if (!Game1.shouldTimePass()) return;
+
+            Buff curBuff = null;
+
             //This is complicated and necessary because SDV stores the run button as an array of buttons. Theoretically we may have more than one.
-            if (this.RunKey == null)
+            if (RunKey == null)
             {
-                this.RunKey = new Keys[Game1.options.runButton.Length];
+                RunKey = new Keys[Game1.options.runButton.Length];
 
                 int i = 0;
 
                 foreach (InputButton button in Game1.options.runButton)
                 {
-                    this.RunKey[i] = button.key;
+                    RunKey[i] = button.key;
                     i++;
                 }
             }
 
             //Cancel toggled sprinting if on horseback
-            if (Game1.player.isRidingHorse() && this.EnableToggle && this.SprintToggledOn)
-                this.SprintToggledOn = false;
-
-            //If time cannot pass we should return (desireable??)
-            if (!Game1.shouldTimePass())
-                return;
+            if (myPlayer.isRidingHorse() && EnableToggle && SprintToggledOn) SprintToggledOn = false;
 
             //Apply the cooldown bluff if needed.
-            if (this.NeedCooldown)
+            if (NeedCooldown)
             {
                 bool canAddCooldown = true;
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
-                    if (buff == this.CooldownBuff || buff == DashBuff)
+                    if (buff == CooldownBuff || buff == DashBuff)
                         canAddCooldown = false;
                 }
 
                 if (canAddCooldown)
                 {
-                    this.NeedCooldown = false;
-                    this.CooldownBuff.millisecondsDuration = this.DashCooldown;
-                    this.CooldownBuff.which = SprintDashMain.CooldownBuffID;
-                    this.CooldownBuff.glow = Color.DarkRed;
-                    Game1.buffsDisplay.addOtherBuff(this.CooldownBuff);
+                    NeedCooldown = false;
+                    CooldownBuff.millisecondsDuration = DashCooldown;
+                    CooldownBuff.which = SprintDashMain.CooldownBuffID;
+                    CooldownBuff.glow = Color.DarkRed;
+                    Game1.buffsDisplay.addOtherBuff(CooldownBuff);
 
-                    this.Monitor.Log($"Dash cooldown activated for {this.CooldownBuff.millisecondsDuration}ms.");
+                    Monitor.Log($"Dash cooldown activated for {CooldownBuff.millisecondsDuration}ms.");
                 }
             }
 
-            //Apply sprint buff if needed.
-            //this.CurrentKeyboardState = Keyboard.GetState();
-            if ((this.Helper.Input.IsDown(this.Config.SprintKey) || this.SprintToggledOn) && !Game1.player.isRidingHorse())
+            //Apply or refresh sprint buff if needed.
+            if (myPlayer.isMoving() && IsInSprintMode() && !myPlayer.isRidingHorse())
             {
-                if (this.SprintTime < 0)
-                    this.SprintTime = 0;
+                if (SprintTime < 0) SprintTime = 0;
+                float stamToConsume;
 
-                foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
+                //Only buff we're interested in is sprint
+                foreach (Buff buff in Game1.buffsDisplay.otherBuffs) if (buff == SprintBuff) curBuff = buff;
+
+                //If we found the sprint buff... deal with it
+                if (curBuff != null)
                 {
-                    if (buff == SprintBuff)
+                    CurrentTimeLeft = curBuff.millisecondsDuration;
+
+                    //Sprinting should implicitly entail running.
+                    if (!myPlayer.running) myPlayer.setRunning(true);
+
+                    if (CurrentTimeLeft <= TimeoutCheck)
                     {
-                        this.CurrentTimeLeft = buff.millisecondsDuration;
+                        RefreshTime = SprintBuffDuration - CurrentTimeLeft;
+                        SprintTime += RefreshTime;
 
-                        if (this.CurrentTimeLeft <= this.TimeoutCheck)
+                        if (EnableWindedness)
                         {
-                            this.RefreshTime = this.SprintBuffDuration - this.CurrentTimeLeft;
-                            this.SprintTime += this.RefreshTime;
-
-                            if (this.EnableWindedness)
+                            //Have to be over the step threshold.
+                            if (SprintTime > WindedStep)
                             {
-                                //Have to be over the step threshold and have been moving (standing still while sprint engaged should not wind).
-                                if (this.SprintTime > this.WindedStep && Game1.player.movedDuringLastTick())
-                                {
-                                    this.StepsProgressed = (int)Math.Floor((double)(this.SprintTime / this.WindedStep));
-                                    this.WindedAccumulated = (int)(this.StamCost * this.StepsProgressed);
-                                }
-
-                                this.WindedTest();
+                                StepsProgressed = (int)Math.Floor((double)(SprintTime / WindedStep));
+                                WindedAccumulated = (int)(StamCost * StepsProgressed);
                             }
-                            else
-                                this.Monitor.Log("Refreshing sprint...");
 
-                            //Only refresh duration if more than min stam remains.
-                            if (Game1.player.stamina > this.MinStaminaToRefresh)
-                                buff.millisecondsDuration += this.RefreshTime;
-
-                            if (Game1.player.isMoving())
-                            {
-                                //Sprinting should implicitly entail running.
-                                if (!Game1.player.running) Game1.player.setRunning(true);
-
-                                //These are checks so that, if somehow we end up with a total stamina cost greater than current stamina, we won't get a negative result. (Not sure if needed?)
-                                if (Game1.player.stamina > (this.StamCost + this.WindedAccumulated))
-                                    Game1.player.stamina -= (this.StamCost + this.WindedAccumulated);
-                                else
-                                    Game1.player.stamina = 0;
-                            }
-                            else if (Game1.player.running) Game1.player.setRunning(false);  //JIC, don't run while standing still...
+                            WindedTest();
                         }
-                        return;
+                        //else Monitor.Log("Refreshing sprint...");
+
+                        stamToConsume = StamCost + WindedAccumulated;
+                        if (myPlayer.stamina > stamToConsume) myPlayer.stamina -= stamToConsume;
+                        else myPlayer.stamina = 0;
+
+                        //Only refresh duration if more than min stam remains.
+                        if (myPlayer.stamina > MinStaminaToRefresh) curBuff.millisecondsDuration += RefreshTime;
                     }
+
+                    curBuff = null;
                 }
-
                 //Only grant the buff if player has more than min stam
-                if (Game1.player.stamina > this.MinStaminaToRefresh)
+                else if (myPlayer.stamina > MinStaminaToRefresh)
                 {
-                    this.Monitor.Log("Starting to sprint...");
+                    Monitor.Log("Starting to sprint...");
 
-                    SprintBuff.millisecondsDuration = this.SprintBuffDuration;
+                    SprintBuff.millisecondsDuration = SprintBuffDuration;
                     SprintBuff.which = SprintDashMain.SprintBuffID;
                     Game1.buffsDisplay.addOtherBuff(SprintBuff);
-                    Game1.player.Stamina -= (this.StamCost + this.WindedAccumulated);
+
+                    stamToConsume = StamCost + WindedAccumulated;
+                    if (myPlayer.stamina > stamToConsume) myPlayer.stamina -= stamToConsume;
+                    else myPlayer.stamina = 0;
                 }
             }
-            else if (this.EnableWindedness && this.SprintTime > 0)
+            
+            if (EnableWindedness && SprintTime > 0 && (!IsInSprintMode() || !myPlayer.isMoving() || myPlayer.isRidingHorse()))
             {
-                foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
+                //Only buff we're interested in is winded
+                foreach (Buff buff in Game1.buffsDisplay.otherBuffs) if (buff == WindedBuff) curBuff = buff;
+
+                //If we found the winded buff... deal with it
+                if (curBuff != null)
                 {
-                    if (buff == WindedBuff)
+                    CurrentTimeLeft = curBuff.millisecondsDuration;
+
+                    if (CurrentTimeLeft <= TimeoutCheck)
                     {
-                        this.CurrentTimeLeft = buff.millisecondsDuration;
+                        RefreshTime = WindedCooldownStep - CurrentTimeLeft;
 
-                        if (this.CurrentTimeLeft <= this.TimeoutCheck)
+                        if (WindedAccumulated > 0)
                         {
-                            this.RefreshTime = this.WindedCooldownStep - this.CurrentTimeLeft;
-
-                            if (this.WindedAccumulated > 0)
-                            {
-                                this.StepsProgressed -= 1;
-                                this.WindedAccumulated -= (int)this.StamCost;
-                                buff.millisecondsDuration += this.RefreshTime;
-                                this.SprintTime -= this.WindedStep;
-                            }
-                            else
-                                this.SprintTime -= this.RefreshTime;
-
-                            if (this.WindedAccumulated < 0)
-                                this.WindedAccumulated = 0; // just in case
-
-                            this.WindedTest();
+                            StepsProgressed -= 1;
+                            WindedAccumulated -= (int)StamCost;
+                            curBuff.millisecondsDuration += RefreshTime;
+                            SprintTime -= WindedStep;
                         }
-                        return;
+                        else SprintTime -= RefreshTime;
+
+                        if (WindedAccumulated < 0) WindedAccumulated = 0; // just in case
+
+                        WindedTest();
                     }
+
+                    curBuff = null;
                 }
+                //If not we need to add it
+                else
+                {
+                    WindedBuff.millisecondsDuration = WindedCooldownStep;
+                    WindedBuff.glow = SprintTime > WindedStep ? Color.Khaki : Color.Transparent;
+                    Game1.buffsDisplay.addOtherBuff(WindedBuff);
 
-                WindedBuff.millisecondsDuration = this.WindedCooldownStep;
-                this.WindedBuff.glow = this.SprintTime > this.WindedStep
-                    ? Color.Khaki
-                    : Color.Transparent;
-                Game1.buffsDisplay.addOtherBuff(WindedBuff);
-
-                this.WindedTest();
+                    WindedTest();
+                }
             }
         }
     }
