@@ -20,7 +20,7 @@ For information on this license, see:
 
 Sprint and Dash Mod Redux mod is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-Source code is packaged with the mod
+Source code is packaged with the mod.
 
 3. CONFIGURATION
 
