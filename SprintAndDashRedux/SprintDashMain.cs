@@ -306,7 +306,8 @@ namespace SprintAndDashRedux
 
                             if (this.EnableWindedness)
                             {
-                                if (this.SprintTime > this.WindedStep)
+                                //Have to be over the step threshold and have been moving (standing still while sprint engaged should not wind).
+                                if (this.SprintTime > this.WindedStep && Game1.player.movedDuringLastTick())
                                 {
                                     this.StepsProgressed = (int)Math.Floor((double)(this.SprintTime / this.WindedStep));
                                     this.WindedAccumulated = (int)(this.StamCost * this.StepsProgressed);
