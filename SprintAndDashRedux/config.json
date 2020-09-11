@@ -4,5 +4,6 @@
   "StamCost": 2.0,
   "DashDuration": 4,
   "WindedStep": 5,
+  "QuitSprintingAt": 30,
   "ToggleMode": true
 }

@@ -103,7 +103,7 @@ namespace SprintAndDashRedux
         private int RefreshTime;
 
         /// <summary>How little stamina player must have for sprint to refresh.</summary>
-        private readonly float MinStaminaToRefresh = 30f;
+        private float MinStaminaToRefresh;
 
 
         /*********
@@ -129,6 +129,7 @@ namespace SprintAndDashRedux
                 WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
                 WindedStep *= 1000; // convert config-based times to ms
             }
+            MinStaminaToRefresh = myConfig.QuitSprintingAt;
             EnableToggle = myConfig.ToggleMode;
             RunKey = null;
 

@@ -23,6 +23,8 @@ namespace SprintAndDashRedux
         /// <summary>Number of seconds of sprinting before player is winded, or 0 to disable windedness.</summary>
         public int WindedStep { get; set; } = 5;
 
+        public float QuitSprintingAt { get; set; } = 30f;
+
         /// <summary>Whether to operate the button as a toggle.</summary>
         public bool ToggleMode { get; set; } = true;
     }

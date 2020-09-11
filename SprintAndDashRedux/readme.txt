@@ -26,13 +26,15 @@ Source code is packaged with the mod.
 
 Sprint and Dash Mod Redux can be configured to change the keys for its sprint and dash functions, the stamina cost per tick of sprinting (stamCost), and the duration of the combat dash buff (dashDuration). Additionally, there is a new "winded" feature to use or not at your choice. You can also select whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again.
 
-stamCost: Measured in points of stamina. By default, this is 2. Minimum is 1, lower values will be treated as 1.
+StamCost: Measured in points of stamina. By default, this is 2. Minimum is 1, lower values will be treated as 1.
 
-dashDuration: Measured in seconds. By default this is 4 seconds. Note that the cooldown will last for 2.5x as long as whatever you set its length to (i.e., by default 10 seconds). Minimum is 1 second, maximum is 10 seconds. Values beyond the maximum will be treated as the maximum. Values below the minimum (e.g., 0) will turn the dash feature off.
+DashDuration: Measured in seconds. By default this is 4 seconds. Note that the cooldown will last for 2.5x as long as whatever you set its length to (i.e., by default 10 seconds). Minimum is 1 second, maximum is 10 seconds. Values beyond the maximum will be treated as the maximum. Values below the minimum (e.g., 0) will turn the dash feature off.
 
-windedStep: Measured in seconds. By default, this is 5 seconds. Set to 0 to ignore/deactivate this system. Explained in more depth below.
+WindedStep: Measured in seconds. By default, this is 5 seconds. Set to 0 to ignore/deactivate this system. Explained in more depth below.
 
-toggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again. By default, this is true. Set to false, you only sprint while the button is pressed. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.)
+QuitSprintingAt: Stop player from sprinting when stamina goes below this value. Default is 30.
+
+ToggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again. By default, this is true. Set to false, you only sprint while the button is pressed. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.)
 
 4. THE WINDED SYSTEM
 
