@@ -56,8 +56,17 @@ namespace SprintAndDashRedux
         /// <summary>Whether we're operating the button as a toggle.</summary>
         private bool EnableToggle;
 
+        /// <summary>At what tick count should we actually do update logic</summary>
+        private uint IntervalTicks;
+
+        /// <summary>Whether to log.</summary>
+        private bool Verbose;
+
         /// <summary>How long player has been sprinting.</summary>
         private int SprintTime;
+
+        /// <summary>Running calculation of stamina to use up.</summary>
+        private float StamToConsume;
 
         /// <summary>How many "stages" of winding (+1 per windedStep seconds) the player has accumulated.</summary>
         private int StepsProgressed;
@@ -133,13 +142,18 @@ namespace SprintAndDashRedux
             EnableToggle = myConfig.ToggleMode;
             RunKey = null;
 
+            //60 tick/sec, interval in 0-1 seconds acts as multiplier.
+            IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
+
+            Verbose = myConfig.VerboseMode;
+
             // hook events
             helper.Events.GameLoop.SaveLoaded += StartupTasks;
             helper.Events.GameLoop.UpdateTicked += GameEvents_UpdateTick;
             helper.Events.Input.ButtonPressed += Input_ButtonPressed;
 
             // log info
-            Monitor.Log($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
+            LogIt($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
         }
 
         private void StartupTasks(object sender, SaveLoadedEventArgs e)
@@ -150,9 +164,30 @@ namespace SprintAndDashRedux
         /*********
         ** Private methods
         *********/
+        //Common task.
+        void StartSprintBuff()
+        {
+            LogIt("Starting to sprint...");
+
+            SprintBuff.millisecondsDuration = SprintBuffDuration;
+            SprintBuff.which = SprintDashMain.SprintBuffID;
+            Game1.buffsDisplay.addOtherBuff(SprintBuff);
+
+            StamToConsume = StamCost + WindedAccumulated;
+            if (myPlayer.stamina > StamToConsume) myPlayer.stamina -= StamToConsume;
+            else myPlayer.stamina = 0;
+        }
+
+        //Controlled logging.
+        void LogIt(string msg, LogLevel lvl = LogLevel.Trace)
+        {
+            if (Verbose) Monitor.Log(msg, lvl);
+        }
+
+        //Special log output for winded system.
         private void WindedTest()
         {
-            Monitor.Log($"(Winded Status) sprint time: {SprintTime}, steps progressed: {StepsProgressed}, winded accumulated: {WindedAccumulated}");
+            LogIt($"(Winded Status) sprint time: {SprintTime}, steps progressed: {StepsProgressed}, winded accumulated: {WindedAccumulated}");
         }
 
         /// <summary>Detect key press.</summary>
@@ -227,15 +262,20 @@ namespace SprintAndDashRedux
                 tileLocation.Y += 2;
                 Game1.currentLocation.temporarySprites.Add(new TemporaryAnimatedSprite(6, new Vector2(tileLocation.X * Game1.tileSize, tileLocation.Y * Game1.tileSize), Color.White, 8, Game1.random.NextDouble() < 0.5, Vector2.Distance(initialTile, tileLocation) * 30f));
 
-                Monitor.Log($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
+                LogIt($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedButton == myConfig.SprintKey && EnableToggle)
+            else if (pressedButton == myConfig.SprintKey)
             {
-                SprintToggledOn = !SprintToggledOn;
+                //If we aren't in toggle mode or aren't currently toggled sprinting, start the buff.
+                if (!SprintToggledOn) StartSprintBuff();
 
-                //Re-enable autorun if sprinting because sprint-walking is, uh, dumb.
-                if (!Game1.options.autoRun && SprintToggledOn)
-                    Game1.options.autoRun = true;
+                if (EnableToggle)
+                {
+                    SprintToggledOn = !SprintToggledOn;
+
+                    //Re-enable autorun if sprinting because sprint-walking is, uh, dumb.
+                    if (!Game1.options.autoRun && SprintToggledOn) Game1.options.autoRun = true;
+                }
             }
             //At this point, the run button is basically a toggle for autorun. Not sure if this is the best feature honestly but eh.
             else if (RunKey.Contains(pressedKey) && EnableToggle)
@@ -243,11 +283,11 @@ namespace SprintAndDashRedux
                 Game1.options.autoRun = !Game1.options.autoRun;
 
                 //Disable sprinting if we're no longer running because sprint-walking is, uh, dumb.
-                if (SprintToggledOn && !Game1.options.autoRun)
-                    SprintToggledOn = false;
+                if (SprintToggledOn && !Game1.options.autoRun) SprintToggledOn = false;
             }
         }
 
+        //Commonly used check.
         private bool IsInSprintMode()
         {
             if (Helper.Input.IsDown(myConfig.SprintKey) || SprintToggledOn) return true;
@@ -255,10 +295,15 @@ namespace SprintAndDashRedux
         }
 
         //Do this every tick. Checks for persistent effects, does first-run stuff.
-        private void GameEvents_UpdateTick(object sender, EventArgs e)
+        private void GameEvents_UpdateTick(object sender, UpdateTickedEventArgs e)
         {
-            //Trying to avoid doing anything in menus/cutscenes and runtime errors...
-            if (!Game1.shouldTimePass() || myPlayer == null) return;
+            /*
+             * Only updates if:
+             * 1. We're on the appropriate interval.
+             * 2. Not in menu, cutscene, etc.
+             * 3. Player exists. (This eliminates some errors.)
+             */
+            if (!e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass() || myPlayer == null) return;
 
             Buff curBuff = null;
 
@@ -297,7 +342,7 @@ namespace SprintAndDashRedux
                     CooldownBuff.glow = Color.DarkRed;
                     Game1.buffsDisplay.addOtherBuff(CooldownBuff);
 
-                    Monitor.Log($"Dash cooldown activated for {CooldownBuff.millisecondsDuration}ms.");
+                    LogIt($"Dash cooldown activated for {CooldownBuff.millisecondsDuration}ms.");
                 }
             }
 
@@ -305,7 +350,6 @@ namespace SprintAndDashRedux
             if (myPlayer.isMoving() && IsInSprintMode() && !myPlayer.isRidingHorse())
             {
                 if (SprintTime < 0) SprintTime = 0;
-                float stamToConsume;
 
                 //Only buff we're interested in is sprint
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs) if (buff == SprintBuff) curBuff = buff;
@@ -334,10 +378,10 @@ namespace SprintAndDashRedux
 
                             WindedTest();
                         }
-                        //else Monitor.Log("Refreshing sprint...");
+                        //else LogIt("Refreshing sprint...");
 
-                        stamToConsume = StamCost + WindedAccumulated;
-                        if (myPlayer.stamina > stamToConsume) myPlayer.stamina -= stamToConsume;
+                        StamToConsume = StamCost + WindedAccumulated;
+                        if (myPlayer.stamina > StamToConsume) myPlayer.stamina -= StamToConsume;
                         else myPlayer.stamina = 0;
 
                         //Only refresh duration if more than min stam remains.
@@ -347,20 +391,12 @@ namespace SprintAndDashRedux
                     curBuff = null;
                 }
                 //Only grant the buff if player has more than min stam
-                else if (myPlayer.stamina > MinStaminaToRefresh)
-                {
-                    Monitor.Log("Starting to sprint...");
-
-                    SprintBuff.millisecondsDuration = SprintBuffDuration;
-                    SprintBuff.which = SprintDashMain.SprintBuffID;
-                    Game1.buffsDisplay.addOtherBuff(SprintBuff);
-
-                    stamToConsume = StamCost + WindedAccumulated;
-                    if (myPlayer.stamina > stamToConsume) myPlayer.stamina -= stamToConsume;
-                    else myPlayer.stamina = 0;
-                }
+                else if (myPlayer.stamina > MinStaminaToRefresh) StartSprintBuff();
             }
-            
+
+            //We can cancel sprint mode immediately like this.
+            if (!IsInSprintMode()) SprintBuff.millisecondsDuration = 0;
+
             if (EnableWindedness && SprintTime > 0 && (!IsInSprintMode() || !myPlayer.isMoving() || myPlayer.isRidingHorse()))
             {
                 //Only buff we're interested in is winded
@@ -395,7 +431,7 @@ namespace SprintAndDashRedux
                 else
                 {
                     WindedBuff.millisecondsDuration = WindedCooldownStep;
-                    WindedBuff.glow = SprintTime > WindedStep ? Color.Khaki : Color.Transparent;
+                    //WindedBuff.glow = SprintTime > WindedStep ? Color.Khaki : Color.Transparent;
                     Game1.buffsDisplay.addOtherBuff(WindedBuff);
 
                     WindedTest();
