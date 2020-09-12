@@ -38,7 +38,7 @@ ToggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where
 
 Finally, there are two "hidden" config items that are advanced and not needed by most players. These do not appear in the config file by default but can be added.
 
-TimeInterval: How often, in seconds, to actually perform regeneration calculations. By default this is 0.1, meaning every tenth of a second (or about 6 game ticks). This value is validated such that we always get between 1 and 60 ticks (inclusive), therefore it makes no sense to enter more than 1, or 0 or less. This setting is not really useful unless you have major performance issues. The higher this number is, the less frequently the mod will do any real calculations and therefore the less work it makes your computer do. Setting this value too low may cause some issues if you rapidly press the sprint key for some reason.
+TimeInterval: How often, in seconds, to actually perform regeneration calculations. By default this is 0.1, meaning every tenth of a second (or about 6 game ticks). This value is validated such that we always get between 1 and 60 ticks (inclusive), therefore it makes no sense to enter more than 1, or 0 or less. This setting is not really useful unless you have major performance issues. The higher this number is, the less frequently the mod will do any real calculations and therefore the less work it makes your computer do. The lower this number is, though, the more responsive the mod will be to changes in state. Setting this value too low may cause some issues if you rapidly press the sprint key for some reason.
 
 VerboseMode: By default it is "false" and controls whether to output regular calibration data.
 
