@@ -153,6 +153,7 @@ namespace SprintAndDashRedux
             helper.Events.Input.ButtonPressed += Input_ButtonPressed;
 
             // log info
+            Monitor.Log("Sprint & Dash Redux => Initialized", LogLevel.Info);
             LogIt($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
         }
 
