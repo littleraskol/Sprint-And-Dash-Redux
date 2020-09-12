@@ -257,7 +257,8 @@ namespace SprintAndDashRedux
         //Do this every tick. Checks for persistent effects, does first-run stuff.
         private void GameEvents_UpdateTick(object sender, EventArgs e)
         {
-            if (!Game1.shouldTimePass()) return;
+            //Trying to avoid doing anything in menus/cutscenes and runtime errors...
+            if (!Game1.shouldTimePass() || myPlayer == null) return;
 
             Buff curBuff = null;
 
