@@ -5,10 +5,10 @@
 
 This mod adds the following functions to the game:
 -Sprinting: Moving faster than usual in exchange for stamina while moving. By default, this uses the Space Key to toggle this behavior on or off, but it can be configured to only activate when the key is held down.
--Dashing: A temporary skill-scaling powerup that buffs your speed, attck power, and defense for a time, with an associated cooldown/vulnerability phase. Think of it as a combat panic button. By default activated with the Q Key.
--Getting winded: Progressive stamina drain over time such that the longer you sprint for, the more stamina you will lose.
+-Dashing: A temporary skill-scaling powerup that buffs your speed, attack power, and defense for a time, with an associated cooldown/vulnerability phase. Think of it as a combat panic button. By default activated with the Q Key.
+-Getting winded: Progressive stamina drain over time such that the longer you sprint for, the more stamina you will lose every second.
 
-Gamepad/controller users: Although I use the word "key" throughout this document, under the hood the code can recognize controller buttons too. The only limitation (for now) is some logic used to detect whether you are running still expects a key.
+Gamepad/controller users: Although I use the word "key" throughout this document, under the hood the code can recognize controller buttons too. The only limitation (for now) is some logic used to detect whether you are running still expects a key. Since I think 99% of users probably autorun, this will likely not matter.
 
 2. CREDITS
 
@@ -32,33 +32,31 @@ DashDuration: Measured in seconds. By default this is 4 seconds. Note that the c
 
 WindedStep: Measured in seconds. By default, this is 5 seconds. Set to 0 to ignore/deactivate this system. Explained in more depth below.
 
-QuitSprintingAt: Stop player from sprinting when stamina goes below this value. Default is 30.
+QuitSprintingAt: Stop player from sprinting when stamina drops below this value. Default is 30. Minimum is 0, lower values will be treated as 0.
 
-ToggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again. By default, this is true. Set to false, you only sprint while the button is pressed. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.)
+ToggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again to turn it off. By default, this is true. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.) When set to false, you only sprint while the button is pressed.
 
 Finally, there are two "hidden" config items that are advanced and not needed by most players. These do not appear in the config file by default but can be added.
 
-TimeInterval: How often, in seconds, to actually perform regeneration calculations. By default this is 0.1, meaning every tenth of a second (or about 6 game ticks). This value is validated such that we always get between 1 and 60 ticks (inclusive), therefore it makes no sense to enter more than 1, or 0 or less. This setting is not really useful unless you have major performance issues. The higher this number is, the less frequently the mod will do any real calculations and therefore the less work it makes your computer do. The lower this number is, though, the more responsive the mod will be to changes in state. Setting this value too low may cause some issues if you rapidly press the sprint key for some reason.
+TimeInterval: How often, in seconds, to actually perform regeneration calculations. By default this is 0.1, meaning every tenth of a second (or about 6 game ticks). This value is validated such that we always end up with an interval between 1 and 60 ticks (inclusive), therefore it makes no sense to enter more than 1, or 0 or less. This setting is not really useful unless you have major performance issues. The higher this number is, the less frequently the mod will do any real calculations and therefore the less work it makes your computer do. The lower this number is, though, the more responsive the mod will be to changes in state. Setting this value too low may cause some issues if you rapidly press the sprint key for some reason.
 
 VerboseMode: By default it is "false" and controls whether to output regular calibration data.
 
 4. THE WINDED SYSTEM
 
-This system puts a brake on sprinting for long periods of time beyond the stamina cost. The idea is that the longer you sprint for, the more it tires you out, making you "winded" after a certain amount of time set by the config value.
+This system puts a brake on sprinting for long periods of time beyond the basic per-second stamina cost. The idea is that the longer you sprint for, the more it tires you out, making you "winded" after a certain amount of time set by the config value.
 
-For every (windedStep) seconds you run, the stamina cost per tick of running increases by 100% of the base. For example, at the default config values: for the first five seconds, it costs 2 stam/tick, then after that for the next five (5-10) seconds, 4 stam/tick, then after that for the next five (10-15) seconds, 6 stam/tick, etc...
+For every (windedStep) seconds you run, the stamina cost per second of running increases by 100% of the base. For example, at the default config values: for the first five seconds, it costs 2 stam/sec, then after that for the next five (6-10) seconds, 4 stam/sec, then after that for the next five (11-15) seconds, 6 stam/sec, etc... It will also keep track of your sprint time if you sprint for less than the step time, and pick back up where you left off. No cheesing with 4-second sprint bursts!
 
-You will also need to take a bit of a break from sprinting if you want this to go away. It takes 1/5 of the "step" time to lower the penalty by 100% of base. Continuing the example above: when you stop sprinting, if you immediately start again, the 6 stam/tick cost remains. If you stop sprinting for 1 second, it goes down to 4/tick, and if you stop sprinting for another second, it goes down to 2/tick (base).
-
-You'll know how long you need to wait before sprinting at the base rate again because the cooldown effect has a light yellow glow. It will also keep track of your sprint time if you sprint for less than the step time, and pick back up where you left off. No cheesing with 4-second sprint bursts!
+You will also need to take a bit of a break from sprinting if you want this to go away. It takes one second to lower the penalty by 100% of base. Continuing the example above: when you stop sprinting, if you immediately start again, the 6 stam/tick cost remains. If you stop sprinting for 1 second, it goes down to 4/tick, and if you stop sprinting for another second, it goes down to 2/tick (base).
 
 5. CHANGELOG
 
-v2.0.0 (08/??/20)
+v2.0.0 (08/13/20)
 -Updated to most recent SMAPI and Stardew Valley.
 -Toggle is default behavior.
 -Winded after increments of 5 seconds of sprinting is default behavior.
--Fix: Sprint no long drains stamina if not moving.
+-Fix: Sprint no long drains stamina or accumulates winded-ness if not moving.
 -Dash buff minimal buff of +1.
 -Dash buff can no longer kill the player (I think??).
 -Support for controller buttons (can't test this though, don't have a controller).
@@ -98,11 +96,11 @@ v0.0.1 alpha (09/21/2016):
 
 7. FUTURE PLANS
 
-In the near future I would like to accommodate controller natively but I have to learn the new API first.
+In-game menus. Otherwise I think it's done and just needs to be maintained.
 
 8. CONTROLS
 
-I've changed the default keys to the ones I use: spacebar for sprint, Q for dash. In the past, changing this required using a code number system. That's no longer the case but I will leave this index here in case it is needed for any reason. Otherwise, you should use this reference for other keys: https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings
+I've set the default keys to the ones I use: spacebar for sprint, Q for dash. In the past, changing this required using a code number system. That's no longer the case but I will leave that index here (below) in case it is needed for any reason. Otherwise, you should use this reference for other keys/buttons/etc: https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings
 
 None = 0,
 Back = 8,

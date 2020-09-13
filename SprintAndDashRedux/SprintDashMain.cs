@@ -138,7 +138,7 @@ namespace SprintAndDashRedux
                 WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
                 WindedStep *= 1000; // convert config-based times to ms
             }
-            MinStaminaToRefresh = myConfig.QuitSprintingAt;
+            MinStaminaToRefresh = Math.Max(0, myConfig.QuitSprintingAt);
             EnableToggle = myConfig.ToggleMode;
             RunKey = null;
 
