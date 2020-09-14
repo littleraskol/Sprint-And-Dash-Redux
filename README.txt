@@ -10,6 +10,8 @@ This mod adds the following functions to the game:
 
 Gamepad/controller users: Although I use the word "key" throughout this document, under the hood the code can recognize controller buttons too. The only limitation (for now) is some logic used to detect whether you are running still expects a key. Since I think 99% of users probably autorun, this will likely not matter.
 
+Source code is included in the install package and available here: https://github.com/littleraskol/Sprint-And-Dash-Redux
+
 2. CREDITS
 
 This is an adaption of the work of OrSpeeder, who created the original Sprint and Dash Mod, and released it under the GNU General Public License. Sprint and Dash Mod Redux will also use it. I recommend checking his version of the mod out if this isn't your thing, or to check out his other mods.
@@ -26,7 +28,7 @@ Source code is packaged with the mod.
 
 Sprint and Dash Mod Redux can be configured to change the keys for its sprint and dash functions, the stamina cost per tick of sprinting (stamCost), and the duration of the combat dash buff (dashDuration). Additionally, there is a new "winded" feature to use or not at your choice. You can also select whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again.
 
-StamCost: Measured in points of stamina. By default, this is 2. Minimum is 1, lower values will be treated as 1.
+StamCost: Measured in points of stamina, how much sprinting costs per second. By default, this is 2. Minimum is 1, lower values will be treated as 1.
 
 DashDuration: Measured in seconds. By default this is 4 seconds. Note that the cooldown will last for 2.5x as long as whatever you set its length to (i.e., by default 10 seconds). Minimum is 1 second, maximum is 10 seconds. Values beyond the maximum will be treated as the maximum. Values below the minimum (e.g., 0) will turn the dash feature off.
 
@@ -48,7 +50,7 @@ This system puts a brake on sprinting for long periods of time beyond the basic 
 
 For every (windedStep) seconds you run, the stamina cost per second of running increases by 100% of the base. For example, at the default config values: for the first five seconds, it costs 2 stam/sec, then after that for the next five (6-10) seconds, 4 stam/sec, then after that for the next five (11-15) seconds, 6 stam/sec, etc... It will also keep track of your sprint time if you sprint for less than the step time, and pick back up where you left off. No cheesing with 4-second sprint bursts!
 
-You will also need to take a bit of a break from sprinting if you want this to go away. It takes one second to lower the penalty by 100% of base. Continuing the example above: when you stop sprinting, if you immediately start again, the 6 stam/tick cost remains. If you stop sprinting for 1 second, it goes down to 4/tick, and if you stop sprinting for another second, it goes down to 2/tick (base).
+You will also need to take a bit of a break from sprinting if you want this to go away. It takes one second to lower the penalty by 100% of base. Continuing the example above: when you stop sprinting, if you immediately start again, the 6 stam/sec cost remains. If you stop sprinting for 1 second, it goes down to 4/sec, and if you stop sprinting for another second, it goes down to 2/sec (base).
 
 5. CHANGELOG
 
