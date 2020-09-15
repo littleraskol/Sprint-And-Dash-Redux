@@ -177,8 +177,6 @@ namespace SprintAndDashRedux
             }
 
             api.RegisterModConfig(ModManifest, () => myConfig = new SprintDashConfig(), () => Helper.WriteConfig(myConfig));
-
-            api.RegisterLabel(ModManifest, "Sprint and Dash Redux Settings", "Settings page for mod.");
             api.RegisterSimpleOption(ModManifest, "Sprint Button", "Set the button to use to sprint.", () => myConfig.SprintKey, (SButton val) => myConfig.SprintKey = val);
             api.RegisterSimpleOption(ModManifest, "Dash Button", "Set the button to use to dash.", () => myConfig.DashKey, (SButton val) => myConfig.DashKey = val);
             api.RegisterSimpleOption(ModManifest, "Stamina Cost", "Cost per second of sprinting. Values less than 1 will be treated as 1.", () => myConfig.StamCost, (float val) => myConfig.StamCost = val);
