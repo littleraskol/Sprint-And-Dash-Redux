@@ -32,6 +32,7 @@ namespace SprintAndDashRedux
         ** Properties
         *********/
         private SprintDashConfig myConfig;
+        private IModHelper myHelper;
 
         private Farmer myPlayer;
 
@@ -123,32 +124,13 @@ namespace SprintAndDashRedux
             CooldownBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 1, "Combat Dash Cooldown", "Combat Dash Cooldown");
             WindedBuff = new Buff(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, "Winded", "Winded");
 
-            // read config
-            myConfig = helper.ReadConfig<SprintDashConfig>();
-            StamCost = Math.Max(1, myConfig.StamCost);
-            DashDuration = Math.Min(10, myConfig.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
-            DashCooldown = (int)(DashDuration * 2.5);
-            WindedStep = Math.Max(0, myConfig.WindedStep);
-            if (WindedStep > 0)
-            {
-                EnableWindedness = true;
-                WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
-                WindedStep *= 1000; // convert config-based times to ms
-            }
-            MinStaminaToRefresh = Math.Max(0, myConfig.QuitSprintingAt);
-            EnableToggle = myConfig.ToggleMode;
-            RunKey = null;
-
-            //60 tick/sec, interval in 0-1 seconds acts as multiplier.
-            IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
-
-            Verbose = myConfig.VerboseMode;
+            myHelper = helper;
 
             // hook events
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.GameLoop.SaveLoaded += StartupTasks;
-            helper.Events.GameLoop.UpdateTicked += GameEvents_UpdateTick;
-            helper.Events.Input.ButtonPressed += Input_ButtonPressed;
+            myHelper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            myHelper.Events.GameLoop.SaveLoaded += StartupTasks;
+            myHelper.Events.GameLoop.UpdateTicked += OnUpdate;
+            myHelper.Events.Input.ButtonPressed += OnButtonPressed;
 
             // log info
             Monitor.Log("Sprint & Dash Redux => Initialized", LogLevel.Info);
@@ -157,6 +139,7 @@ namespace SprintAndDashRedux
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
+            myConfig = myHelper.ReadConfig<SprintDashConfig>();
             TryLoadingGMCM();
         }
 
@@ -185,6 +168,25 @@ namespace SprintAndDashRedux
         private void StartupTasks(object sender, SaveLoadedEventArgs e)
         {
             myPlayer = Game1.player;
+            myConfig = myHelper.ReadConfig<SprintDashConfig>();
+            StamCost = Math.Max(1, myConfig.StamCost);
+            DashDuration = Math.Min(10, myConfig.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
+            DashCooldown = (int)(DashDuration * 2.5);
+            WindedStep = Math.Max(0, myConfig.WindedStep);
+            if (WindedStep > 0)
+            {
+                EnableWindedness = true;
+                WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
+                WindedStep *= 1000; // convert config-based times to ms
+            }
+            MinStaminaToRefresh = Math.Max(0, myConfig.QuitSprintingAt);
+            EnableToggle = myConfig.ToggleMode;
+            RunKey = null;
+
+            //60 tick/sec, interval in 0-1 seconds acts as multiplier.
+            IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
+
+            Verbose = myConfig.VerboseMode;
         }
 
         /*********
@@ -219,7 +221,7 @@ namespace SprintAndDashRedux
         /// <summary>Detect key press.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
-        void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
+        void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             // do nothing if the conditions aren't favorable
             if (!Game1.shouldTimePass() || myPlayer.isRidingHorse())
@@ -321,7 +323,7 @@ namespace SprintAndDashRedux
         }
 
         //Do this every tick. Checks for persistent effects, does first-run stuff.
-        private void GameEvents_UpdateTick(object sender, UpdateTickedEventArgs e)
+        private void OnUpdate(object sender, UpdateTickedEventArgs e)
         {
             /*
              * Only updates if:
