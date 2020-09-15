@@ -380,7 +380,7 @@ namespace SprintAndDashRedux
              * 3. Not in menu, cutscene, etc.
              * 4. Player exists. (This eliminates some errors.)
              */
-            if (SaveHasLoaded || myPlayer == null || !e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass()) return;
+            if (!SaveHasLoaded || myPlayer == null || !e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass()) return;
 
             BasicConfigReport("On Update Event");
 
@@ -474,7 +474,7 @@ namespace SprintAndDashRedux
             }
 
             //We can cancel sprint mode immediately like this.
-            //if (!IsInSprintMode()) SprintBuff.millisecondsDuration = 0;
+            if (!IsInSprintMode()) SprintBuff.millisecondsDuration = 0;
 
             if (EnableWindedness && SprintTime > 0 && (!IsInSprintMode() || !myPlayer.isMoving() || myPlayer.isRidingHorse()))
             {
