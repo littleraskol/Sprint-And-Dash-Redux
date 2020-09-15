@@ -99,8 +99,8 @@ namespace SprintAndDashRedux
         /// <summary>Don't need to cooldown for dash by default</summary>
         private bool NeedCooldown;
 
-        /// <summary>The sprint time.</summary>
-        private readonly int SprintBuffDuration = 1000;
+        /// <summary>The sprint time. This is 1.2 seconds to accomodate a range of update intervals.</summary>
+        private readonly int SprintBuffDuration = 1200;
 
         /// <summary>When to check to refresh buffs.</summary>
         private int TimeoutCheck;
@@ -146,7 +146,6 @@ namespace SprintAndDashRedux
             IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
             //Want a timeout that is slightly more than the interval. (1 itck is ~16.666.. ms)
             TimeoutCheck = 5 + Math.Max(17, Math.Min(1000, (int)(myConfig.TimeInterval * 1000)));
-
 
             Verbose = myConfig.VerboseMode;
 
