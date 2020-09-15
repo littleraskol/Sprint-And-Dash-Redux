@@ -54,7 +54,10 @@ You will also need to take a bit of a break from sprinting if you want this to g
 
 5. CHANGELOG
 
-v2.0.0 (08/13/20)
+v2.0.1 (9/15/20)
+-Fixed but with interval system that prevented proper continuity of sprint buff and activation of winded system.
+
+v2.0.0 (09/13/20)
 -Updated to most recent SMAPI and Stardew Valley.
 -Toggle is default behavior.
 -Winded after increments of 5 seconds of sprinting is default behavior.

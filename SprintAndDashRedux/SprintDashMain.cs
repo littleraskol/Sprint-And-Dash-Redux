@@ -103,7 +103,7 @@ namespace SprintAndDashRedux
         private readonly int SprintBuffDuration = 1000;
 
         /// <summary>When to check to refresh buffs.</summary>
-        private readonly int TimeoutCheck = 35;
+        private int TimeoutCheck;
 
         /// <summary>The current milliseconds left for a buff.</summary>
         private int CurrentTimeLeft;
@@ -144,6 +144,9 @@ namespace SprintAndDashRedux
 
             //60 tick/sec, interval in 0-1 seconds acts as multiplier.
             IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
+            //Want a timeout that is slightly more than the interval. (1 itck is ~16.666.. ms)
+            TimeoutCheck = 5 + Math.Max(17, Math.Min(1000, (int)(myConfig.TimeInterval * 1000)));
+
 
             Verbose = myConfig.VerboseMode;
 
