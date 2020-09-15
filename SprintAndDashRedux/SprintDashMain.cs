@@ -138,6 +138,10 @@ namespace SprintAndDashRedux
 
             RunKey = null;
 
+            //Default JIC values.
+            IntervalTicks = 30;
+            TimeoutCheck = 105;
+
             // hook events
             myHelper.Events.GameLoop.GameLaunched += OnGameLaunched;
             myHelper.Events.GameLoop.SaveLoaded += StartupTasks;
@@ -146,13 +150,19 @@ namespace SprintAndDashRedux
 
             // log info
             Monitor.Log("Sprint & Dash Redux => Initialized", LogLevel.Info);
-            LogIt($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
+            BasicConfigReport("Mod Entry");
+        }
+
+        private void BasicConfigReport(string step, LogLevel lvl = LogLevel.Trace)
+        {
+            LogIt($"Config Report At: {step} - Sprint button: {SprintButton}, dash button: {DashButton}, stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, min stam to sprint: {MinStaminaToRefresh}, toggle mode: {EnableToggle}, update interval ticks: {IntervalTicks}, timeout check: {TimeoutCheck}, verbose mode: {Verbose} ", lvl);
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             myConfig = myHelper.ReadConfig<SprintDashConfig>();
             TryLoadingGMCM();
+            BasicConfigReport("On Game Launched Event");
         }
 
         private void TryLoadingGMCM()
@@ -221,6 +231,8 @@ namespace SprintAndDashRedux
             }
 
             SaveHasLoaded = true;
+
+            BasicConfigReport("Startup Tasks");
         }
 
         /*********
@@ -257,6 +269,8 @@ namespace SprintAndDashRedux
         /// <param name="e">The event arguments.</param>
         void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
+            BasicConfigReport("On Button Press Event");
+
             // do nothing if the conditions aren't favorable
             if (!Game1.shouldTimePass() || myPlayer.isRidingHorse())
                 return;
@@ -367,6 +381,8 @@ namespace SprintAndDashRedux
              * 4. Player exists. (This eliminates some errors.)
              */
             if (SaveHasLoaded || myPlayer == null || !e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass()) return;
+
+            BasicConfigReport("On Update Event");
 
             Buff curBuff = null;
 
