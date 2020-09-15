@@ -26,6 +26,8 @@ Source code is packaged with the mod.
 
 3. CONFIGURATION
 
+Note that while this section refers to the config file, you can change settings in game using the Generic Mod Config Menu (GMCM) interface.
+
 Sprint and Dash Mod Redux can be configured to change the keys for its sprint and dash functions, the stamina cost per tick of sprinting (stamCost), and the duration of the combat dash buff (dashDuration). Additionally, there is a new "winded" feature to use or not at your choice. You can also select whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again.
 
 StamCost: Measured in points of stamina, how much sprinting costs per second. By default, this is 2. Minimum is 1, lower values will be treated as 1.
@@ -54,7 +56,10 @@ You will also need to take a bit of a break from sprinting if you want this to g
 
 5. CHANGELOG
 
-v2.0.0 (08/13/20)
+v2.1.0 (09/??/20)
+-Settings can now be changed in game using Generic Mod Config Menu.
+
+v2.0.0 (09/13/20)
 -Updated to most recent SMAPI and Stardew Valley.
 -Toggle is default behavior.
 -Winded after increments of 5 seconds of sprinting is default behavior.
@@ -98,7 +103,7 @@ v0.0.1 alpha (09/21/2016):
 
 7. FUTURE PLANS
 
-In-game menus. Otherwise I think it's done and just needs to be maintained.
+None, unless I can get Stardew Cofig Menu working again.
 
 8. CONTROLS
 

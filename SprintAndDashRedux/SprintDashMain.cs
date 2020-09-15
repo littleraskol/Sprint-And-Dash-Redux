@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
@@ -131,7 +128,7 @@ namespace SprintAndDashRedux
             StamCost = Math.Max(1, myConfig.StamCost);
             DashDuration = Math.Min(10, myConfig.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
             DashCooldown = (int)(DashDuration * 2.5);
-            WindedStep = myConfig.WindedStep;
+            WindedStep = Math.Max(0, myConfig.WindedStep);
             if (WindedStep > 0)
             {
                 EnableWindedness = true;
@@ -148,6 +145,7 @@ namespace SprintAndDashRedux
             Verbose = myConfig.VerboseMode;
 
             // hook events
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.SaveLoaded += StartupTasks;
             helper.Events.GameLoop.UpdateTicked += GameEvents_UpdateTick;
             helper.Events.Input.ButtonPressed += Input_ButtonPressed;
@@ -157,6 +155,33 @@ namespace SprintAndDashRedux
             LogIt($"Stamina cost: {StamCost}, dash duration: {DashDuration}, dash cooldown: {DashCooldown}, winded step: {WindedStep}, toggle mode: {EnableToggle}", LogLevel.Trace);
         }
 
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            TryLoadingGMCM();
+        }
+
+        private void TryLoadingGMCM()
+        {
+            //See if we can find GMCM, quit if not.
+            var api = Helper.ModRegistry.GetApi<GenericModConfigMenu.GenericModConfigMenuAPI>("spacechase0.GenericModConfigMenu");
+
+            if (api == null)
+            {
+                Monitor.Log("Unable to load GMCM API.", LogLevel.Info);
+                return;
+            }
+
+            api.RegisterModConfig(ModManifest, () => myConfig = new SprintDashConfig(), () => Helper.WriteConfig(myConfig));
+
+            api.RegisterLabel(ModManifest, "Sprint and Dash Redux Settings", "Settings page for mod.");
+            api.RegisterSimpleOption(ModManifest, "Sprint Button", "Set the button to use to sprint.", () => myConfig.SprintKey, (SButton val) => myConfig.SprintKey = val);
+            api.RegisterSimpleOption(ModManifest, "Dash Button", "Set the button to use to dash.", () => myConfig.DashKey, (SButton val) => myConfig.DashKey = val);
+            api.RegisterSimpleOption(ModManifest, "Stamina Cost", "Cost per second of sprinting. Values less than 1 will be treated as 1.", () => myConfig.StamCost, (float val) => myConfig.StamCost = val);
+            api.RegisterClampedOption(ModManifest, "Dash Duration", "How long the dash buff will last. Note that there is a cooldown/vulnerable phase 2.5x as long.", () => myConfig.DashDuration, (int val) => myConfig.DashDuration = val, 0, 10);
+            api.RegisterSimpleOption(ModManifest, "Winded Step", "Values above 0 activate the 'winded' system, see reademe.txt for details.", () => myConfig.WindedStep, (int val) => myConfig.WindedStep = val);
+            api.RegisterSimpleOption(ModManifest, "Quit Sprinting At...", "Stamina must be at least this much to sprint.", () => myConfig.QuitSprintingAt, (float val) => myConfig.QuitSprintingAt = val);
+            api.RegisterSimpleOption(ModManifest, "Toggle Mode", "This turns the sprint key into a toggle, such then you start sprinting when you press it and stop when you press it again.", () => myConfig.ToggleMode, (bool val) => myConfig.ToggleMode = val);
+        }
         private void StartupTasks(object sender, SaveLoadedEventArgs e)
         {
             myPlayer = Game1.player;

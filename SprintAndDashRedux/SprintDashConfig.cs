@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 
 namespace SprintAndDashRedux
 {
