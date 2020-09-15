@@ -267,7 +267,7 @@ namespace SprintAndDashRedux
 
                 LogIt($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedButton == myConfig.SprintKey)
+            else if (pressedButton == myConfig.SprintKey && myPlayer.stamina > MinStaminaToRefresh)
             {
                 //If we aren't in toggle mode or aren't currently toggled sprinting, start the buff.
                 if (!SprintToggledOn) StartSprintBuff();

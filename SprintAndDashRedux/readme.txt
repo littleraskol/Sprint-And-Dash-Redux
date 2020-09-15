@@ -56,6 +56,7 @@ You will also need to take a bit of a break from sprinting if you want this to g
 
 v2.0.1 (9/15/20)
 -Fixed but with interval system that prevented proper continuity of sprint buff and activation of winded system.
+-Also fixed issue that allowed briefly being able to sprint even when stamina was under the min req.
 
 v2.0.0 (09/13/20)
 -Updated to most recent SMAPI and Stardew Valley.
