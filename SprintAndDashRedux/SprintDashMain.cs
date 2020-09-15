@@ -410,7 +410,10 @@ namespace SprintAndDashRedux
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
                     if (buff == CooldownBuff || buff == DashBuff)
+                    {
                         canAddCooldown = false;
+                        break;
+                    }
                 }
 
                 if (canAddCooldown)
@@ -431,7 +434,14 @@ namespace SprintAndDashRedux
                 if (SprintTime < 0) SprintTime = 0;
 
                 //Only buff we're interested in is sprint
-                foreach (Buff buff in Game1.buffsDisplay.otherBuffs) if (buff == SprintBuff) curBuff = buff;
+                foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
+                {
+                    if (buff == SprintBuff)
+                    {
+                        curBuff = buff;
+                        break;
+                    }
+                }
 
                 //If we found the sprint buff... deal with it
                 if (curBuff != null)
@@ -479,7 +489,14 @@ namespace SprintAndDashRedux
             if (EnableWindedness && SprintTime > 0 && (!IsInSprintMode() || !myPlayer.isMoving() || myPlayer.isRidingHorse()))
             {
                 //Only buff we're interested in is winded
-                foreach (Buff buff in Game1.buffsDisplay.otherBuffs) if (buff == WindedBuff) curBuff = buff;
+                foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
+                {
+                    if (buff == WindedBuff)
+                    {
+                        curBuff = buff;
+                        break;
+                    }
+                }
 
                 //If we found the winded buff... deal with it
                 if (curBuff != null)
