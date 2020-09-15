@@ -56,7 +56,7 @@ You will also need to take a bit of a break from sprinting if you want this to g
 
 5. CHANGELOG
 
-v2.1.0 (09/??/20)
+v2.1.0 (09/16/20)
 -Settings can now be changed in game using Generic Mod Config Menu.
 
 v2.0.1 (9/15/20)
