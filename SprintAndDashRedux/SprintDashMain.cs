@@ -105,11 +105,11 @@ namespace SprintAndDashRedux
         /// <summary>Don't need to cooldown for dash by default</summary>
         private bool NeedCooldown;
 
-        /// <summary>The sprint time.</summary>
-        private readonly int SprintBuffDuration = 1000;
+        /// <summary>The sprint time. This is 1.2 seconds to accomodate a range of update intervals.</summary>
+        private readonly int SprintBuffDuration = 1200;
 
         /// <summary>When to check to refresh buffs.</summary>
-        private readonly int TimeoutCheck = 35;
+        private int TimeoutCheck;
 
         /// <summary>The current milliseconds left for a buff.</summary>
         private int CurrentTimeLeft;
@@ -201,6 +201,8 @@ namespace SprintAndDashRedux
 
             //60 tick/sec, interval in 0-1 seconds acts as multiplier.
             IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
+            //Want a timeout that is slightly more than the interval. (1 itck is ~16.666.. ms)
+            TimeoutCheck = 5 + Math.Max(17, Math.Min(1000, (int)(myConfig.TimeInterval * 1000)));
 
             Verbose = myConfig.VerboseMode;
 
@@ -324,7 +326,7 @@ namespace SprintAndDashRedux
 
                 LogIt($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedButton == SprintButton)
+            else if (pressedButton == SprintButton && myPlayer.stamina > MinStaminaToRefresh)
             {
                 //If we aren't in toggle mode or aren't currently toggled sprinting, start the buff.
                 if (!SprintToggledOn) StartSprintBuff();
