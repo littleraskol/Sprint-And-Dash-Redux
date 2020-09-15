@@ -33,8 +33,16 @@ namespace SprintAndDashRedux
         *********/
         private SprintDashConfig myConfig;
         private IModHelper myHelper;
-
         private Farmer myPlayer;
+
+        /// <summary>We need this for more control over ticks.</summary>
+        private bool SaveHasLoaded;
+
+        /// <summary>The button to start sprinting.</summary>
+        private SButton SprintButton;
+
+        /// <summary>The button to start dashing.</summary>
+        private SButton DashButton;
 
         /// <summary>The stamina cost per tick for sprinting.</summary>
         private float StamCost;
@@ -126,6 +134,10 @@ namespace SprintAndDashRedux
 
             myHelper = helper;
 
+            SaveHasLoaded = false;
+
+            RunKey = null;
+
             // hook events
             myHelper.Events.GameLoop.GameLaunched += OnGameLaunched;
             myHelper.Events.GameLoop.SaveLoaded += StartupTasks;
@@ -165,10 +177,15 @@ namespace SprintAndDashRedux
             api.RegisterSimpleOption(ModManifest, "Quit Sprinting At...", "Stamina must be at least this much to sprint.", () => myConfig.QuitSprintingAt, (float val) => myConfig.QuitSprintingAt = val);
             api.RegisterSimpleOption(ModManifest, "Toggle Mode", "This turns the sprint key into a toggle, such then you start sprinting when you press it and stop when you press it again.", () => myConfig.ToggleMode, (bool val) => myConfig.ToggleMode = val);
         }
+
         private void StartupTasks(object sender, SaveLoadedEventArgs e)
         {
             myPlayer = Game1.player;
             myConfig = myHelper.ReadConfig<SprintDashConfig>();
+
+            SprintButton = myConfig.SprintKey;
+            DashButton = myConfig.DashKey;
+
             StamCost = Math.Max(1, myConfig.StamCost);
             DashDuration = Math.Min(10, myConfig.DashDuration) * 1000; // 1-10 seconds, < 0  turns off at later step.
             DashCooldown = (int)(DashDuration * 2.5);
@@ -181,12 +198,27 @@ namespace SprintAndDashRedux
             }
             MinStaminaToRefresh = Math.Max(0, myConfig.QuitSprintingAt);
             EnableToggle = myConfig.ToggleMode;
-            RunKey = null;
 
             //60 tick/sec, interval in 0-1 seconds acts as multiplier.
             IntervalTicks = Math.Max(1, Math.Min(60, (uint)(myConfig.TimeInterval * 60.0)));
 
             Verbose = myConfig.VerboseMode;
+
+            //This is complicated and necessary because SDV stores the run button as an array of buttons. Theoretically we may have more than one.
+            if (RunKey == null)
+            {
+                RunKey = new Keys[Game1.options.runButton.Length];
+
+                int i = 0;
+
+                foreach (InputButton button in Game1.options.runButton)
+                {
+                    RunKey[i] = button.key;
+                    i++;
+                }
+            }
+
+            SaveHasLoaded = true;
         }
 
         /*********
@@ -235,7 +267,7 @@ namespace SprintAndDashRedux
             else pressedKey = Keys.None;
 
             // dashing is a time-limited thing, just do it on a press
-            if (DashDuration > 0 && pressedButton == myConfig.DashKey && !NeedCooldown)
+            if (DashDuration > 0 && pressedButton == DashButton && !NeedCooldown)
             {
                 foreach (Buff buff in Game1.buffsDisplay.otherBuffs)
                 {
@@ -292,7 +324,7 @@ namespace SprintAndDashRedux
 
                 LogIt($"Activating dash for {DashBuff.millisecondsDuration}ms with buff of +{speed} speed, +{defense} defense, +{attack} attack");
             }
-            else if (pressedButton == myConfig.SprintKey)
+            else if (pressedButton == SprintButton)
             {
                 //If we aren't in toggle mode or aren't currently toggled sprinting, start the buff.
                 if (!SprintToggledOn) StartSprintBuff();
@@ -306,7 +338,7 @@ namespace SprintAndDashRedux
                 }
             }
             //At this point, the run button is basically a toggle for autorun. Not sure if this is the best feature honestly but eh.
-            else if (RunKey.Contains(pressedKey) && EnableToggle)
+            else if (RunKey != null && RunKey.Contains(pressedKey) && EnableToggle)
             {
                 Game1.options.autoRun = !Game1.options.autoRun;
 
@@ -318,7 +350,7 @@ namespace SprintAndDashRedux
         //Commonly used check.
         private bool IsInSprintMode()
         {
-            if (Helper.Input.IsDown(myConfig.SprintKey) || SprintToggledOn) return true;
+            if (Helper.Input.IsDown(SprintButton) || SprintToggledOn) return true;
             else return false;
         }
 
@@ -327,11 +359,12 @@ namespace SprintAndDashRedux
         {
             /*
              * Only updates if:
-             * 1. We're on the appropriate interval.
-             * 2. Not in menu, cutscene, etc.
-             * 3. Player exists. (This eliminates some errors.)
+             * 1. The save loaded.
+             * 2. We're on the appropriate interval.
+             * 3. Not in menu, cutscene, etc.
+             * 4. Player exists. (This eliminates some errors.)
              */
-            if (!e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass() || myPlayer == null) return;
+            if (SaveHasLoaded || myPlayer == null || !e.IsMultipleOf(IntervalTicks) || !Game1.shouldTimePass()) return;
 
             Buff curBuff = null;
 
@@ -423,7 +456,7 @@ namespace SprintAndDashRedux
             }
 
             //We can cancel sprint mode immediately like this.
-            if (!IsInSprintMode()) SprintBuff.millisecondsDuration = 0;
+            //if (!IsInSprintMode()) SprintBuff.millisecondsDuration = 0;
 
             if (EnableWindedness && SprintTime > 0 && (!IsInSprintMode() || !myPlayer.isMoving() || myPlayer.isRidingHorse()))
             {
