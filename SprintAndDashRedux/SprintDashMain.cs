@@ -182,7 +182,7 @@ namespace SprintAndDashRedux
             api.RegisterClampedOption(ModManifest, "Stamina Cost", "Cost per second of sprinting. Use config file to enter values greater than 10.", () => myConfig.StamCost, (float val) => myConfig.StamCost = val, 1, 10);
             api.RegisterClampedOption(ModManifest, "Dash Duration", "How long the dash buff will last. Note that there is a cooldown/vulnerable phase 2.5x as long.", () => myConfig.DashDuration, (int val) => myConfig.DashDuration = val, 0, 10);
             api.RegisterClampedOption(ModManifest, "Winded Step", "Values above 0 activate the 'winded' system, see reademe.txt for details. Use config file to enter values greater than 30.", () => myConfig.WindedStep, (int val) => myConfig.WindedStep = val, 0, 30);
-            api.RegisterClampedOption(ModManifest, "Quit Sprinting At...", "Stamina must be at least this much to sprint. Use config file to enter values greater than 270.", () => (int)myConfig.QuitSprintingAt, (int val) => myConfig.QuitSprintingAt = val, 0, 270);
+            api.RegisterClampedOption(ModManifest, "Sprint Requirement", "Stamina must be at least this percent of max stamina to run.", () => (int)(myConfig.QuitSprintingAt * 100), (int val) => myConfig.QuitSprintingAt = (float)val/100, 0, 99);
             api.RegisterSimpleOption(ModManifest, "Toggle Mode", "This turns the sprint key into a toggle, such then you start sprinting when you press it and stop when you press it again.", () => myConfig.ToggleMode, (bool val) => myConfig.ToggleMode = val);
         }
 
@@ -204,7 +204,7 @@ namespace SprintAndDashRedux
                 WindedCooldownStep = WindedStep * 200;  //Recovering from winded-ness take 1/5 the time spent being winded.
                 WindedStep *= 1000; // convert config-based times to ms
             }
-            MinStaminaToRefresh = Math.Max(0, myConfig.QuitSprintingAt);
+            MinStaminaToRefresh = Math.Max(0, Math.Min(0.99f, myConfig.QuitSprintingAt)) * myPlayer.maxStamina;
             EnableToggle = myConfig.ToggleMode;
 
             //60 tick/sec, interval in 0-1 seconds acts as multiplier.

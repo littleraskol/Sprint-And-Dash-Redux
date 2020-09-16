@@ -36,7 +36,7 @@ DashDuration: Measured in seconds. By default this is 4 seconds. Note that the c
 
 WindedStep: Measured in seconds. By default, this is 5 seconds. Set to 0 to ignore/deactivate this system. Explained in more depth below.
 
-QuitSprintingAt: Stop player from sprinting when stamina drops below this value. Default is 30. Minimum is 0, lower values will be treated as 0.
+QuitSprintingAt: Stop player from sprinting when stamina drops below a percentage of max stamina defined by this value (such that 0.XX = XX%). Default is 0.1 (10%). Minimum is 0, lower values will be treated as 0 Maximum is 0.99, higher values will be treated as 0.99.
 
 ToggleMode: Whether to use the sprint (and normal "run") keys as a toggle, where pressing once turns it on until you press again to turn it off. By default, this is true. Note that this will turn the run key into a toggle, due to the need to avoid applying the sprint buff while walking. (I kind of assume everyone is using autorun tbh.) When set to false, you only sprint while the button is pressed.
 
