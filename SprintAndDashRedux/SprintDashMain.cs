@@ -179,10 +179,10 @@ namespace SprintAndDashRedux
             api.RegisterModConfig(ModManifest, () => myConfig = new SprintDashConfig(), () => Helper.WriteConfig(myConfig));
             api.RegisterSimpleOption(ModManifest, "Sprint Button", "Set the button to use to sprint.", () => myConfig.SprintKey, (SButton val) => myConfig.SprintKey = val);
             api.RegisterSimpleOption(ModManifest, "Dash Button", "Set the button to use to dash.", () => myConfig.DashKey, (SButton val) => myConfig.DashKey = val);
-            api.RegisterSimpleOption(ModManifest, "Stamina Cost", "Cost per second of sprinting. Values less than 1 will be treated as 1.", () => myConfig.StamCost, (float val) => myConfig.StamCost = val);
+            api.RegisterClampedOption(ModManifest, "Stamina Cost", "Cost per second of sprinting. Use config file to enter values greater than 10.", () => myConfig.StamCost, (float val) => myConfig.StamCost = val, 1, 10);
             api.RegisterClampedOption(ModManifest, "Dash Duration", "How long the dash buff will last. Note that there is a cooldown/vulnerable phase 2.5x as long.", () => myConfig.DashDuration, (int val) => myConfig.DashDuration = val, 0, 10);
-            api.RegisterSimpleOption(ModManifest, "Winded Step", "Values above 0 activate the 'winded' system, see reademe.txt for details.", () => myConfig.WindedStep, (int val) => myConfig.WindedStep = val);
-            api.RegisterSimpleOption(ModManifest, "Quit Sprinting At...", "Stamina must be at least this much to sprint.", () => myConfig.QuitSprintingAt, (float val) => myConfig.QuitSprintingAt = val);
+            api.RegisterClampedOption(ModManifest, "Winded Step", "Values above 0 activate the 'winded' system, see reademe.txt for details. Use config file to enter values greater than 30.", () => myConfig.WindedStep, (int val) => myConfig.WindedStep = val, 0, 30);
+            api.RegisterClampedOption(ModManifest, "Quit Sprinting At...", "Stamina must be at least this much to sprint. Use config file to enter values greater than 270.", () => (int)myConfig.QuitSprintingAt, (int val) => myConfig.QuitSprintingAt = val, 0, 270);
             api.RegisterSimpleOption(ModManifest, "Toggle Mode", "This turns the sprint key into a toggle, such then you start sprinting when you press it and stop when you press it again.", () => myConfig.ToggleMode, (bool val) => myConfig.ToggleMode = val);
         }
 
