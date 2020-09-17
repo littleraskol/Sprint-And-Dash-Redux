@@ -56,6 +56,9 @@ You will also need to take a bit of a break from sprinting if you want this to g
 
 5. CHANGELOG
 
+v2.1.X (??/??/??)
+-Minor GMCM option description change.
+
 v2.1.0 (09/16/20)
 -Settings can now be changed in game using Generic Mod Config Menu.
 
